@@ -15,9 +15,9 @@ pipeline {
             } 
             steps {
                 script {
-                    print "Node path: ${env.NODE_PATH}"
-                    sh 'npm install'
-                    stash name: "node_modules", includes: "${env.NODE_PATH}/**"
+                    print "NPM Previx path: ${env.NPM_CONFIG_PREFIX}"
+                    sh "npm install -g"
+                    stash name: "node_modules", includes: "${env.NPM_CONFIG_PREFIX}/**"
                 }
             }
         }
