@@ -15,6 +15,7 @@ pipeline {
             } 
             steps {
                 script {
+                    sh "sleep 120"
                     print "NPM Previx path: ${env.NPM_CACHE}"
                     print "NPM configuration: "
                     sh "npm config ls -l"
