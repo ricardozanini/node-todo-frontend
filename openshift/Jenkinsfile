@@ -46,8 +46,8 @@ pipeline {
                         openshift.withProject("${env.APP_NAME}") {
                             timeout(time:20, unit:'MINUTES') {
                                 unstash name: 'node_modules'
-                                sh "ls -la *"
-                                def buildSelector = openshift.selector("bc/${env.APP_NAME}-docker").startBuild("--from-dir='.'")
+                                sh "tar -cvf app.tar node_modules package.json src"
+                                def buildSelector = openshift.selector("bc/${env.APP_NAME}-docker").startBuild("--from-archive='app.tar'")
                                 //todo: throw expcetion if doesn't exist
                                 buildSelector.logs("-f")        
                                 def dc  = openshift.selector("dc", env.APP_NAME)
