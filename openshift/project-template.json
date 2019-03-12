@@ -194,7 +194,7 @@
         "labels": {
           "app": "${NAME}"
         },
-        "name": "${NAME}-docker"
+        "name": "${NAME}-s2i"
       },
       "spec": {
         "output": {
@@ -204,17 +204,18 @@
           }
         },
         "source": {
-          "dockerfile": "FROM registry.access.redhat.com/rhscl/nodejs-8-rhel7\nCOPY package.json /opt/app-root\nCOPY node_modules /opt/app-root\nCOPY src /opt/app-root",
-          "type": "Dockerfile"
+          "binary": {},
+          "type": "Binary"
         },
         "strategy": {
-          "dockerStrategy": {
+          "sourceStrategy": {
             "from": {
               "kind": "ImageStreamTag",
-              "name": "rhscl/nodejs-8-rhel7:latest"
+              "name": "nodejs-8-rhel7:latest",
+              "namespace" : "openshift"
             }
           },
-          "type": "Docker"
+          "type": "Source"
         },
         "triggers": [
           {

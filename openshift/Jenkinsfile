@@ -15,13 +15,10 @@ pipeline {
             } 
             steps {
                 script {
-                    print "NPM Previx path: ${env.NPM_CACHE}"
-                    print "NPM configuration: "
-                    sh "npm config ls -l"
                     sh "mkdir -p node_modules"
                     sh "cp -rf ${env.NPM_CACHE} ."
                     sh "npm install"
-                    sh "yes | cp -rf node_modules/* ${env.NPM_CACHE}"
+                    sh "cp -rf node_modules/* ${env.NPM_CACHE}"
                     stash name: "node_modules", includes: "node_modules/**"
                 }
             }
@@ -47,7 +44,7 @@ pipeline {
                             timeout(time:20, unit:'MINUTES') {
                                 unstash name: 'node_modules'
                                 sh "tar -cvf app.tar node_modules package.json src"
-                                def buildSelector = openshift.selector("bc/${env.APP_NAME}-docker").startBuild("--from-archive='app.tar'")
+                                def buildSelector = openshift.selector("bc/${env.APP_NAME}-s2i").startBuild("--from-archive='app.tar'")
                                 //todo: throw expcetion if doesn't exist
                                 buildSelector.logs("-f")        
                                 def dc  = openshift.selector("dc", env.APP_NAME)
