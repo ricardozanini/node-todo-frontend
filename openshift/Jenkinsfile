@@ -15,12 +15,11 @@ pipeline {
             } 
             steps {
                 script {
-                    sh "sleep 120"
                     print "NPM Previx path: ${env.NPM_CACHE}"
                     print "NPM configuration: "
                     sh "npm config ls -l"
                     sh "mkdir node_modules"
-                    sh "cp -rf ${env.NPM_CACHE}/* node_modules"
+                    sh "cp -rf ${env.NPM_CACHE} node_modules"
                     sh "npm install"
                     sh "yes | cp -rf node_modules/* ${env.NPM_CACHE}"
                     sh "ls -la node_modules/*"
