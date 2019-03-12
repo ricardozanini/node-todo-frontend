@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("${env.APP_NAME}") {
+                        openshift.withProject("${env.PROJECT_NAME}") {
                             timeout(time:20, unit:'MINUTES') {
                                 unstash name: 'node_modules'
                                 sh "tar -cvf app.tar node_modules package.json src"
