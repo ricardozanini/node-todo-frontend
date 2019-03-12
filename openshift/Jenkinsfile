@@ -19,6 +19,7 @@ pipeline {
                     print "NPM configuration: "
                     sh "npm config ls -l"
                     sh "npm install -g"
+                    sh "sleep 600"
                     stash name: "node_modules", includes: "${env.NPM_CONFIG_PREFIX}/**"
                 }
             }
