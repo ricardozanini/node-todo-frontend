@@ -1,0 +1,55 @@
+def appVersion = ""
+//def gitUrl = "https://github.com/gustavoapolinario/node-todo-frontend.git"
+
+pipeline {
+    agent any
+    stages {
+        stage("Checkout SCM") {   
+            steps {
+                git env.GIT_SOURCE_URL
+            }
+        }
+        stage('Build') {
+            agent {
+                label 'nodejs'
+            } 
+            steps {
+                script {
+                    sh 'npm install'
+                    stash name: "node_modules", includes: "node_modules"
+                }
+            }
+        }
+        stage('Test') {
+            agent {
+                label 'nodejs'
+            } 
+            steps {
+                script {
+                    sh 'npm test'
+                }
+            }
+        }
+        stage("Build Image") {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject("${env.APP_NAME}") {
+                            timeout(time:20, unit:'MINUTES') {
+                                unstash name: 'node_modules'
+                                def buildSelector = openshift.selector("bc/${env.APP_NAME}-docker").startBuild("--from-dir='.'")
+                                //todo: throw expcetion if doesn't exist
+                                buildSelector.logs("-f")        
+                                def dc  = openshift.selector("dc", env.APP_NAME)
+                                dc.rollout().status()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+

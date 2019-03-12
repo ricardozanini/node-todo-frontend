@@ -1,0 +1,312 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "node-todo-frontend-template"
+  },
+  "parameters": [
+    {
+      "name": "NAME",
+      "displayName": "Application Name",
+      "discription": "Name of the Node Sample application.",
+      "value": "node-todo-frontend",
+      "required": true
+    },
+    {
+      "name": "TZ",
+      "displayName": "Application Timezone",
+      "discription": "Timezone for the application",
+      "value": "America/Sao_Paulo",
+      "required": true
+    },
+    {
+      "name": "GIT_REPOSITORY",
+      "displayName": "Git Repository",
+      "discription": "Application source code",
+      "value": "https://github.com/gustavoapolinario/node-todo-frontend.git",
+      "required": true
+    },
+    {
+      "name": "GIT_BRANCH",
+      "displayName": "Git Branch",
+      "discription": "Application git branch",
+      "value": "master",
+      "required": true
+    },
+    {
+      "name": "JENKINS_PIPELINE",
+      "displayName": "Jenkins Pipeline to Run",
+      "discription": "Jenkins Pipeline (relative to the repo root dir) that will run under this project context. Defaults to build the app from the scratch.",
+      "value": "openshift/Jenkinsfile",
+      "required": true
+    }
+  ],
+  "objects": [
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}"
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "web",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ],
+        "selector": {
+          "deploymentconfig": "${NAME}"
+        },
+        "sessionAffinity": "None",
+        "type": "ClusterIP"
+      },
+      "status": {
+        "loadBalancer": {}
+      }
+    },
+    {
+      "apiVersion": "apps.openshift.io/v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "deploymentconfig": "${NAME}"
+        },
+        "strategy": {
+          "activeDeadlineSeconds": 21600,
+          "resources": {},
+          "rollingParams": {
+            "intervalSeconds": 1,
+            "maxSurge": "25%",
+            "maxUnavailable": "25%",
+            "timeoutSeconds": 600,
+            "updatePeriodSeconds": 1
+          },
+          "type": "Rolling"
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "app": "${NAME}",
+              "deploymentconfig": "${NAME}"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "TZ",
+                    "value": "${TZ}"
+                  }
+                ],
+                "imagePullPolicy": "Always",
+                "livenessProbe": {
+                  "failureThreshold": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 2
+                },
+                "name": "${NAME}",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "readinessProbe": {
+                  "failureThreshold": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10,
+                  "successThreshold": 1,
+                  "timeoutSeconds": 2
+                },
+                "resources": {
+                  "limits": {
+                    "cpu": "500m",
+                    "memory": "256Mi"
+                  }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File"
+              }
+            ],
+            "dnsPolicy": "ClusterFirst",
+            "restartPolicy": "Always",
+            "schedulerName": "default-scheduler",
+            "securityContext": {},
+            "terminationGracePeriodSeconds": 30
+          }
+        },
+        "test": false,
+        "triggers": [
+          {
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": ["${NAME}"],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "${NAME}:latest"
+              }
+            },
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "build.openshift.io/v1",
+      "kind": "BuildConfig",
+      "metadata": {
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}-docker"
+      },
+      "spec": {
+        "output": {
+          "to": {
+            "kind": "ImageStreamTag",
+            "name": "${NAME}:latest"
+          }
+        },
+        "source": {
+          "dockerfile": "FROM registry.access.redhat.com/rhoar-nodejs/nodejs-8\nCOPY package.json /opt/app-root/src\nCOPY npm_modules /opt/app-root/src\nCOPY src /opt/app-root/src",
+          "type": "Dockerfile"
+        },
+        "strategy": {
+          "dockerStrategy": {
+            "from": {
+              "kind": "ImageStreamTag",
+              "name": "nodejs-8:latest"
+            }
+          },
+          "type": "Docker"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "imageChange": {},
+            "type": "ImageChange"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "build.openshift.io/v1",
+      "kind": "BuildConfig",
+      "metadata": {
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}-pipeline"
+      },
+      "spec": {
+        "failedBuildsHistoryLimit": 5,
+        "nodeSelector": null,
+        "postCommit": {},
+        "resources": {},
+        "runPolicy": "Serial",
+        "source": {
+          "git": {
+            "ref": "${GIT_BRANCH}",
+            "uri": "${GIT_REPOSITORY}"
+          },
+          "type": "Git"
+        },
+        "strategy": {
+          "type": "JenkinsPipeline",
+          "jenkinsPipelineStrategy": {
+            "jenkinsfilePath": "${JENKINS_PIPELINE}",
+            "env": [
+              { "name": "GIT_REPOSITORY", "value": "${GIT_REPOSITORY}" },
+              { "name": "GIT_BRANCH", "value": "${GIT_BRANCH}" },
+              { "name": "APP_NAME", "value": "${NAME}" }
+            ]
+          }
+        },
+        "successfulBuildsHistoryLimit": 5,
+        "triggers": [
+          {
+            "imageChange": {},
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      },
+      "status": {
+        "lastVersion": 1
+      }
+    },
+    {
+      "apiVersion": "image.openshift.io/v1",
+      "kind": "ImageStream",
+      "metadata": {
+        "generation": 1,
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}"
+      },
+      "spec": {
+        "lookupPolicy": {
+          "local": false
+        }
+      }
+    },
+    {
+      "apiVersion": "route.openshift.io/v1",
+      "kind": "Route",
+      "metadata": {
+        "labels": {
+          "app": "${NAME}"
+        },
+        "name": "${NAME}"
+      },
+      "spec": {
+        "port": {
+          "targetPort": "web"
+        },
+        "tls": {
+          "termination": "edge"
+        },
+        "to": {
+          "kind": "Service",
+          "name": "${NAME}",
+          "weight": 100
+        },
+        "wildcardPolicy": "None"
+      }
+    }
+  ]
+}
