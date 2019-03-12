@@ -13,6 +13,13 @@
       "required": true
     },
     {
+      "name": "PROJECT_NAME",
+      "displayName": "Project Name",
+      "discription": "Name of the project where the application will reside.",
+      "value": "sample-nodejs",
+      "required": true
+    },
+    {
       "name": "TZ",
       "displayName": "Application Timezone",
       "discription": "Timezone for the application",
@@ -197,7 +204,7 @@
           }
         },
         "source": {
-          "dockerfile": "FROM registry.access.redhat.com/rhoar-nodejs/nodejs-8\nCOPY package.json /opt/app-root/src\nCOPY npm_modules /opt/app-root/src\nCOPY src /opt/app-root/src",
+          "dockerfile": "FROM registry.access.redhat.com/rhoar-nodejs/nodejs-8\nCOPY package.json /opt/app-root/src\nCOPY node_modules /opt/app-root/src\nCOPY src /opt/app-root/src",
           "type": "Dockerfile"
         },
         "strategy": {
@@ -249,7 +256,8 @@
             "env": [
               { "name": "GIT_REPOSITORY", "value": "${GIT_REPOSITORY}" },
               { "name": "GIT_BRANCH", "value": "${GIT_BRANCH}" },
-              { "name": "APP_NAME", "value": "${NAME}" }
+              { "name": "APP_NAME", "value": "${NAME}" },
+              { "name": "PROJECT_NAME", "value": "${PROJECT_NAME}" }
             ]
           }
         },
