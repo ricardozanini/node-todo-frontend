@@ -18,9 +18,12 @@ pipeline {
                     print "NPM Previx path: ${env.NPM_CACHE}"
                     print "NPM configuration: "
                     sh "npm config ls -l"
-                    sh "npm install --prefix ${env.NPM_CACHE} -g"
-                    sh "sleep 600"
-                    stash name: "node_modules", includes: "${env.NPM_CACHE}/**"
+                    sh "cp ${env.NPM_CACHE} ."
+                    sh "npm install"
+                    sh "yes | cp -rf node_modules/* ${env.NPM_CACHE}"
+                    sh "ls -la node_modules/*"
+                    sh "ls -la ${env.NPM_CACHE}/*"
+                    stash name: "node_modules", includes: "node_modules/**"
                 }
             }
         }
