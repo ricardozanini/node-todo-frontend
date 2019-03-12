@@ -204,14 +204,14 @@
           }
         },
         "source": {
-          "dockerfile": "FROM registry.access.redhat.com/rhoar-nodejs/nodejs-8\nCOPY package.json /opt/app-root/src\nCOPY node_modules /opt/app-root/src\nCOPY src /opt/app-root/src",
+          "dockerfile": "FROM registry.access.redhat.com/rhscl/nodejs-8-rhel7\nCOPY package.json /opt/app-root\nCOPY node_modules /opt/app-root\nCOPY src /opt/app-root",
           "type": "Dockerfile"
         },
         "strategy": {
           "dockerStrategy": {
             "from": {
               "kind": "ImageStreamTag",
-              "name": "nodejs-8:latest"
+              "name": "rhscl/nodejs-8-rhel7:latest"
             }
           },
           "type": "Docker"
