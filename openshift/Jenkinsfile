@@ -15,8 +15,9 @@ pipeline {
             } 
             steps {
                 script {
+                    print "Node path: ${env.NODE_PATH}"
                     sh 'npm install'
-                    stash name: "node_modules", includes: "node_modules"
+                    stash name: "node_modules", includes: "${env.NODE_PATH}/**"
                 }
             }
         }
@@ -37,6 +38,7 @@ pipeline {
                         openshift.withProject("${env.APP_NAME}") {
                             timeout(time:20, unit:'MINUTES') {
                                 unstash name: 'node_modules'
+                                sh "ls -la *"
                                 def buildSelector = openshift.selector("bc/${env.APP_NAME}-docker").startBuild("--from-dir='.'")
                                 //todo: throw expcetion if doesn't exist
                                 buildSelector.logs("-f")        
