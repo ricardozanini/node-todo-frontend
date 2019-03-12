@@ -118,6 +118,14 @@
                   {
                     "name": "TZ",
                     "value": "${TZ}"
+                  },
+                  {
+                    "name": "PORT",
+                    "value": 8080
+                  },
+                  {
+                    "name" : "TODO_BACKEND_PORT",
+                    "value" : 8080                    
                   }
                 ],
                 "imagePullPolicy": "Always",
@@ -212,7 +220,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "name": "nodejs-8-rhel7:latest",
-              "namespace" : "openshift"
+              "namespace": "openshift"
             }
           },
           "type": "Source"
