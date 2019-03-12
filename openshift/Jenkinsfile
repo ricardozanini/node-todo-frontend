@@ -18,7 +18,7 @@ pipeline {
                     print "NPM Previx path: ${env.NPM_CACHE}"
                     print "NPM configuration: "
                     sh "npm config ls -l"
-                    sh "mkdir node_modules"
+                    sh "mkdir -p node_modules"
                     sh "cp -rf ${env.NPM_CACHE} ."
                     sh "npm install"
                     sh "yes | cp -rf node_modules/* ${env.NPM_CACHE}"
